@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mealsapp/data/models/meals/meals_model.dart';
+import 'package:mealsapp/data/remote/sqflite_service.dart';
 
 class AddMealScreen extends StatelessWidget {
   const AddMealScreen({super.key});
@@ -10,6 +13,9 @@ class AddMealScreen extends StatelessWidget {
     final TextEditingController rateController = TextEditingController();
     final TextEditingController timeController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
+    final SqfliteService sqfliteService = SqfliteService();
+    final db = sqfliteService.openMealDatabase();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -28,7 +34,7 @@ class AddMealScreen extends StatelessWidget {
             children: [
               const Text('Meal Name'),
               const SizedBox(height: 8),
-               TextField(
+              TextField(
                 controller: nameController,
                 decoration: InputDecoration(
                   hintText: 'Breakfast',
@@ -38,7 +44,7 @@ class AddMealScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text('Image URL'),
               const SizedBox(height: 8),
-               TextField(
+              TextField(
                 controller: imageUrlController,
                 maxLines: 3,
                 decoration: InputDecoration(
@@ -49,7 +55,7 @@ class AddMealScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text('Rate'),
               const SizedBox(height: 8),
-               TextField(
+              TextField(
                 controller: rateController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
@@ -60,7 +66,7 @@ class AddMealScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text('Time'),
               const SizedBox(height: 8),
-               TextField(
+              TextField(
                 controller: timeController,
                 decoration: InputDecoration(
                   hintText: '20 - 30',
@@ -70,7 +76,7 @@ class AddMealScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text('Description'),
               const SizedBox(height: 8),
-               TextField(
+              TextField(
                 controller: descriptionController,
                 maxLines: 4,
                 decoration: InputDecoration(
@@ -90,8 +96,28 @@ class AddMealScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: () {
-                      // Save action
+                    onPressed: () async {
+                      final db = await sqfliteService.openMealDatabase();
+
+                      // Create a Meal object
+                      final meal = Meal(
+                        id: DateTime.now().millisecondsSinceEpoch,
+                        mealName: nameController.text,
+                        description: descriptionController.text,
+                        imageUrl: imageUrlController.text,
+                        rate: double.tryParse(rateController.text) ?? 0.0,
+                        time: int.tryParse(timeController.text) ?? 0,
+                      );
+
+                      sqfliteService.insertMeal(db, meal);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Meal saved successfully!')),
+                      );
+                        sqfliteService.getAllMeals(db);
+
+                      GoRouter.of(context).pop();
                     },
                     child: const Text(
                       'Save',

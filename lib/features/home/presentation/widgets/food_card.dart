@@ -40,7 +40,7 @@ class FoodCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
+              child: Image.network(
                 imagePath,
                 height: 100,
                 width: double.infinity,
